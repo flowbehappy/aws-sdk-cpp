@@ -836,14 +836,15 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
         {
             request->SetResolvedRemoteHost(ip);
         }
-        if (curlResponseCode != CURLE_OK)
-        {
-            m_curlHandleContainer.DestroyCurlHandle(connectionHandle);
-        }
-        else
-        {
-            m_curlHandleContainer.ReleaseCurlHandle(connectionHandle);
-        }
+        m_curlHandleContainer.DestroyCurlHandle(connectionHandle);
+        // if (curlResponseCode != CURLE_OK)
+        // {
+        //     m_curlHandleContainer.DestroyCurlHandle(connectionHandle);
+        // }
+        // else
+        // {
+        //     m_curlHandleContainer.ReleaseCurlHandle(connectionHandle);
+        // }
         //go ahead and flush the response body stream
         response->GetResponseBody().flush();
         request->AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::RequestLatency), (DateTime::Now() - startTransmissionTime).count());
