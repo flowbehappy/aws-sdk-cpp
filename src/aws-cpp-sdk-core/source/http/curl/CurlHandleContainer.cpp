@@ -19,12 +19,12 @@ CurlHandleContainer::CurlHandleContainer(unsigned maxSize, long httpRequestTimeo
                 m_maxPoolSize(maxSize), m_httpRequestTimeout(httpRequestTimeout), m_connectTimeout(connectTimeout), m_enableTcpKeepAlive(enableTcpKeepAlive),
                 m_tcpKeepAliveIntervalMs(tcpKeepAliveIntervalMs), m_lowSpeedTime(lowSpeedTime), m_lowSpeedLimit(lowSpeedLimit), m_poolSize(0)
 {
-    AWS_LOGSTREAM_INFO(CURL_HANDLE_CONTAINER_TAG, "Initializing CurlHandleContainer with size " << maxSize);
+    AWS_LOGSTREAM_INFO(CURL_HANDLE_CONTAINER_TAG, "Initializing CurlHandleContainer with size " << maxSize << ", Container: " << this);
 }
 
 CurlHandleContainer::~CurlHandleContainer()
 {
-    AWS_LOGSTREAM_INFO(CURL_HANDLE_CONTAINER_TAG, "Cleaning up CurlHandleContainer.");
+    AWS_LOGSTREAM_INFO(CURL_HANDLE_CONTAINER_TAG, "Cleaning up CurlHandleContainer." << ", Container: " << this);
     for (CURL* handle : m_handleContainer.ShutdownAndWait(m_poolSize))
     {
         AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Cleaning up " << handle);
@@ -34,7 +34,7 @@ CurlHandleContainer::~CurlHandleContainer()
 
 CURL* CurlHandleContainer::AcquireCurlHandle()
 {
-    AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Attempting to acquire curl connection.");
+    AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Attempting to acquire curl connection." << ", Container: " << this);
 
     if(!m_handleContainer.HasResourcesAvailable())
     {
@@ -57,7 +57,7 @@ void CurlHandleContainer::ReleaseCurlHandle(CURL* handle)
 #endif
         curl_easy_reset(handle);
         SetDefaultOptionsOnHandle(handle);
-        AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Releasing curl handle " << handle);
+        AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Releasing curl handle " << handle << ", Container: " << this);
         m_handleContainer.Release(handle);
         AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Notified waiting threads.");
     }
@@ -109,7 +109,7 @@ bool CurlHandleContainer::CheckAndGrowPool()
     {
         unsigned multiplier = m_poolSize > 0 ? m_poolSize : 1;
         unsigned amountToAdd = (std::min)(multiplier * 2, m_maxPoolSize - m_poolSize);
-        AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "attempting to grow pool size by " << amountToAdd);
+        AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "attempting to grow pool size by " << amountToAdd << ", addr: " << this);
 
         unsigned actuallyAdded = 0;
         for (unsigned i = 0; i < amountToAdd; ++i)
